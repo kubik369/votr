@@ -74,11 +74,11 @@ Votr.LogViewer = React.createClass({
   },
 
   componentDidMount: function () {
-    $(window).on('keypress.logViewer', this.handleKeypress);
+    $(window).on('keydown.logViewer', this.handleKeypress);
   },
 
   componentWillUnmount: function () {
-    $(window).off('keypress.logViewer');
+    $(window).off('keydown.logViewer');
   },
 
   render: function () {
