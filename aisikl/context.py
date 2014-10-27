@@ -47,14 +47,17 @@ class Context:
         :param \*\*kwargs: arguments for :meth:`requests.Session.request`.
         :return: a :class:`~BeautifulSoup` object.
         '''
+        self.log('benchmark', 'Begin AIS network request')
         self.log('http', 'Requesting {} {}'.format(
             method, url.partition('?')[0]), url)
         url = urljoin(self.ais_url, url)
         response = self.connection.request(method, url, **kwargs)
         response.raise_for_status()
         self.log('http', 'Received response', response.text)
+        self.log('benchmark', 'End AIS network request')
+        self.log('benchmark', 'Begin HTML parsing')
         soup = BeautifulSoup(response.text)
-        self.log('http', 'Parsed HTML data')
+        self.log('benchmark', 'End HTML parsing')
         return soup
 
     def request_json(self, url, **data):
@@ -65,12 +68,14 @@ class Context:
         :param \*\*kwargs: arguments for :meth:`requests.Session.request`.
         :return: a dictionary.
         '''
+        self.log('benchmark', 'Begin REST network request')
         self.log('http', 'Requesting {} {}'.format(
             method, url.partition('?')[0]), url)
         url = urljoin(self.rest_url, url)
         response = self.connection.request("POST", url, data=data)
         response.raise_for_status()
         self.log('http', 'Received response', response.text)
+        self.log('benchmark', 'End REST network request')
 
         if not response.url.startswith(self.rest_url):
             raise LoggedOutError('REST login expired.')
