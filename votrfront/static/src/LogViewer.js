@@ -6,6 +6,7 @@
 Votr.LogViewerContent = React.createClass({
   getInitialState: function () {
     return {
+      benchmark: true,
       http: true,
       table: true
     }
@@ -32,6 +33,7 @@ Votr.LogViewerContent = React.createClass({
     return <div className="log-viewer">
       <div className="options">
         {this.props.closeButton}
+        {this.props.modeButton}
         <ul className="list-inline">
           {_.sortBy(_.keys(types)).map((type) =>
             <li key={type}>
@@ -63,10 +65,74 @@ Votr.LogViewerContent = React.createClass({
 });
 
 
+Votr.LogViewerBenchmarkContent = React.createClass({
+  computeBenchmarks: function () {
+    var sums = {};
+    var beginnings = {};
+
+    function start(what, time) {
+      beginnings[what] = time;
+    }
+    function end(what, time) {
+      if (!beginnings[what]) return;
+      if (!sums[what]) sums[what] = 0;
+      sums[what] += time - beginnings[what];
+      delete beginnings[what];
+    }
+
+    Votr.logs.forEach((entry) => {
+      if (entry.log == 'benchmark' && entry.message.substr(0, 6) == 'Begin ') {
+        start(entry.message.substr(6), entry.time);
+      }
+      if (entry.log == 'benchmark' && entry.message.substr(0, 4) == 'End ') {
+        end(entry.message.substr(4), entry.time);
+      }
+      if (entry.log == 'rpc' && entry.message.substr(-8) == ' started') {
+        start('total RPC time', entry.time);
+      }
+      if (entry.log == 'rpc' && entry.message.substr(-9) == ' finished') {
+        end('total RPC time', entry.time);
+      }
+    });
+
+    return _(sums).pairs().sortBy(1).reverse().valueOf();
+  },
+
+  render: function () {
+    var benchmarks = this.computeBenchmarks();
+
+    return <div className="log-viewer">
+      <div className="options">
+        {this.props.closeButton}
+        {this.props.modeButton}
+      </div>
+
+      <div className="scroll">
+        <table>
+          <tbody>
+            {benchmarks.map(([message, sum], index) =>
+              <tr key={message}>
+                <td className="text-right">{sum.toFixed(3)}</td>
+                <td>{message}</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>;
+  }
+});
+
+
 Votr.LogViewer = React.createClass({
   toggle: function () {
     Votr.LocalSettings.set("logViewer",
-      Votr.LocalSettings.get("logViewer") == "true" ? "false" : "true");
+      Votr.LocalSettings.get("logViewer") ? "" : "log");
+  },
+
+  toggleMode: function () {
+    Votr.LocalSettings.set("logViewer",
+      Votr.LocalSettings.get("logViewer") == "log" ? "benchmark" : "log");
   },
 
   handleKeypress: function (e) {
@@ -85,14 +151,23 @@ Votr.LogViewer = React.createClass({
   },
 
   render: function () {
-    if (Votr.LocalSettings.get("logViewer") != "true") return null;
+    var mode = Votr.LocalSettings.get("logViewer");
+
+    var component =
+      mode == 'log' ? Votr.LogViewerContent :
+      mode == 'benchmark' ? Votr.LogViewerBenchmarkContent :
+      null;
+
+    if (!component) return null;
+
+    var modeButton = <button type="button" className="pull-left" onClick={this.toggleMode}>{mode}</button>;
 
     var closeButton = <button type="button" className="close" onClick={this.toggle}>
       <span aria-hidden="true">&times;</span>
       <span className="sr-only">Close</span>
     </button>;
 
-    return <Votr.LogViewerContent closeButton={closeButton} />;
+    return <component modeButton={modeButton} closeButton={closeButton} />;
   }
 });
 
