@@ -32,6 +32,7 @@ class WebuiStudiumMixin:
         result = [Studium(sp_skratka=row['studijnyProgramSkratka'],
                           sp_popis=row['studijnyProgramPopis'],
                           sp_doplnujuce_udaje=row['studijnyProgramDoplnUdaje'],
+                          organizacna_jednotka=row['studijnyProgramSkratkaAkreditOJ'],
                           zaciatok=row['zaciatokStudia'],
                           koniec=row['koniecStudia'],
                           sp_dlzka=row['studijnyProgramDlzka'],

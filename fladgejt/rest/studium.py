@@ -23,6 +23,8 @@ class RestStudiumMixin:
                   for row in studia]
         return result
 
+    del get_studia # TODO: vyhod ma ked aj v RESTe bude 'organizacna_jednotka'
+
     def get_zapisne_listy(self, studium_key):
         sp_skratka, zaciatok = decode_key(studium_key)
 

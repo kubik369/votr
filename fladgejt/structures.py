@@ -4,8 +4,8 @@ from .helpers import keyed_namedtuple
 
 
 Studium = keyed_namedtuple('Studium', [
-    'sp_skratka', 'sp_popis', 'sp_doplnujuce_udaje', 'zaciatok', 'koniec',
-    'sp_dlzka', 'sp_cislo', 'rok_studia', 'studium_key'],
+    'sp_skratka', 'sp_popis', 'sp_doplnujuce_udaje', 'organizacna_jednotka',
+    'zaciatok', 'koniec', 'sp_dlzka', 'sp_cislo', 'rok_studia', 'studium_key'],
     studium_key=['sp_skratka', 'zaciatok'])
 
 ZapisnyList = keyed_namedtuple('ZapisnyList', [
